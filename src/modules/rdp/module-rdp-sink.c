@@ -313,6 +313,12 @@ static int sink_process_msg(pa_msgobject *o, int code, void *data,
         case PA_SINK_MESSAGE_SET_STATE:
             switch (*(int*)(data))
             {
+                case PA_SINK_RUNNING:
+                pa_log_debug("Sink Running");
+                if (u->fd == -1) {
+                    open_socket(u);
+                }
+                u->timestamp = pa_rtclock_now();
                 case PA_SINK_IDLE:
                 case PA_SINK_SUSPENDED:
                     reset_latency(u);
