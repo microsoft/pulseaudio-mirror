@@ -1,6 +1,6 @@
 project('pulseaudio', 'c',
         version : run_command(find_program('git-version-gen'), join_paths(meson.current_source_dir(), '.tarball-version'), check : false).stdout().strip(),
-        meson_version : '>= 0.50.0',
+        meson_version : '>= 0.56.0',
         default_options : [ 'c_std=gnu11', 'cpp_std=c++17' ]
         )
 
@@ -123,7 +123,7 @@ bashcompletiondir = get_option('bashcompletiondir')
 if bashcompletiondir == ''
   bash_completion_dep = dependency('bash-completion', required : false)
   if bash_completion_dep.found()
-    bashcompletiondir = bash_completion_dep.get_pkgconfig_variable('completionsdir')
+    bashcompletiondir = bash_completion_dep.get_variable(pkgconfig : 'completionsdir')
   else
     bashcompletiondir = join_paths(datadir, 'bash-completion', 'completions')
   endif
@@ -171,7 +171,7 @@ cdata.set_quoted('DESKTOPFILEDIR', join_paths(datadir, 'applications'))
 cdata.set_quoted('PULSE_LOCALEDIR', localedir)
 cdata.set_quoted('GETTEXT_PACKAGE', 'pulseaudio')
 cdata.set('ENABLE_NLS', 1)
-cdata.set('top_srcdir', meson.source_root())
+cdata.set('top_srcdir', meson.project_source_root())
 
 # Platform specifics
 # First some defaults to keep config file generation happy
@@ -439,7 +439,7 @@ endif
 # Code coverage
 
 if get_option('gcov')
-  add_languages('cpp')
+  add_languages('cpp', native: false)
   add_project_arguments('--coverage', language: ['c', 'cpp'])
   add_project_link_arguments('--coverage', language: ['c', 'cpp'])
 endif
@@ -733,7 +733,7 @@ if get_option('daemon')
 
   systemd_dep = dependency('systemd', required : get_option('systemd'))
   if systemd_dep.found() and systemduserunitdir == ''
-    systemduserunitdir = systemd_dep.get_pkgconfig_variable('systemduserunitdir')
+    systemduserunitdir = systemd_dep.get_variable(pkgconfig: 'systemduserunitdir')
   endif
 
   libelogind_dep = dependency('libelogind', required : get_option('elogind'))
@@ -840,9 +840,7 @@ check_dep = dependency('check', version : '>= 0.9.10', required : get_option('te
 
 # Subdirs
 
-if get_option('doxygen')
-  subdir('doxygen')
-endif
+subdir('doxygen')
 if get_option('client')
   subdir('po')
 endif
